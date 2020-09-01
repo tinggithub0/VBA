@@ -1,0 +1,62 @@
+Sub block()
+    On Error GoTo ErrorHandler
+
+    ' 設定們
+    Dim CB1, CB2, SheetName1, SheetName2, NoteDate As String
+    Dim NewSheet As Worksheet
+    Dim TodayDate As Date
+
+
+    ' 參數們
+    CB1 = ActiveWorkbook.Worksheets("Sheet3").ComboBox1.Value
+    CB2 = ActiveWorkbook.Worksheets("Sheet3").ComboBox2.Value
+    SheetName1 = Mid(CB1, 3, 2)
+    TodayDate = Now() ' Now()格式: 2020/6/21 19:11
+    DateJudge1 = Mid(TodayDate, 7, 1)
+    DateJudge2 = Mid(TodayDate, 9, 1)
+    DateJudge3 = Mid(TodayDate, 10, 1)
+
+
+    ' 判斷月份、日期，定NoteDate值
+    If DateJudge1 = "/" And DateJudge2 = " " Then      ' 1/1
+        NoteDate = Mid(TodayDate, 6, 3)
+    ElseIf DateJudge1 = "/" And DateJudge2 <> " " Then ' 1/10
+        NoteDate = Mid(TodayDate, 6, 4)
+    ElseIf DateJudge1 <> "/" And DateJudge3 = " " Then ' 10/1
+        NoteDate = Mid(TodayDate, 6, 4)
+    Else                                               ' 10/10
+        NoteDate = Mid(TodayDate, 6, 5)
+    End If
+
+
+    ' NewSheet命名準備
+    Set NewSheet = ActiveWorkbook.Sheets.Add(After:=ActiveWorkbook.Worksheets(ActiveWorkbook.Worksheets.count))
+    If CB2 = "APC" Then
+        SheetName2 = "AB"
+    ElseIf CB2 = "tool" Then
+        SheetName2 = "TB"
+    ElseIf CB2 = "AOI" Then
+        SheetName2 = "OB"
+    Else
+        SheetName2 = ""
+    End If
+
+
+    ' NewSheet命名
+    NewSheet.Name = SheetName1 & " " & SheetName2
+
+
+    ' 填入資料
+    NewSheet.Range("A1") = ActiveWorkbook.Worksheets("Sheet3").Range("B28")
+    NewSheet.Range("A2") = ActiveWorkbook.Worksheets("Sheet3").Range("B29")
+    NewSheet.Range("A4") = NoteDate & " " & CB1 & " " & ActiveWorkbook.Worksheets("Sheet3").Range("B30").Value & " " & CB2 & " " & "block, " & _
+                                ActiveWorkbook.Worksheets("Sheet3").Range("B28") & " " & "ADO noml"
+    NewSheet.Range("A5") = NoteDate & " " & CB1 & " " & ActiveWorkbook.Worksheets("Sheet3").Range("B30").Value & " " & CB2 & " " & "block, " & _
+                                ActiveWorkbook.Worksheets("Sheet3").Range("B29") & " " & "ADO noml"
+    
+    
+    ErrorHandler:
+        Resume Next
+
+
+End Sub

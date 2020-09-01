@@ -1,0 +1,42 @@
+Sub 一鍵回到上班前()
+
+    ' 先存檔
+    ActiveWorkbook.Save
+
+
+    ' 刪除sheet(Orbo.異常lot.XG.XH)內容
+    ActiveWorkbook.Worksheets("Orbo").Select
+    ActiveWorkbook.Worksheets("Orbo").Range(Cells(2, 1), Cells(80, 9)).Value = ""
+    ActiveWorkbook.Worksheets("Orbo").Range(Cells(2, 11), Cells(80, 12)).Value = ""
+    ActiveWorkbook.Worksheets("異常lot").Select
+    ActiveWorkbook.Worksheets("異常lot").Range(Cells(2, 1), Cells(120, 11)).Value = ""
+    ActiveWorkbook.Worksheets("異常lot").Range(Cells(2, 13), Cells(120, 14)).Value = ""
+    ActiveWorkbook.Worksheets("XG inline").Select
+    ActiveWorkbook.Worksheets("XG inline").Range(Cells(2, 1), Cells(50, 17)).Value = ""
+    ActiveWorkbook.Worksheets("XH inline").Select
+    ActiveWorkbook.Worksheets("XH inline").Range(Cells(2, 1), Cells(50, 17)).Value = ""
+
+
+    ' 填入下一班日期("Orbo"."異常lot"."每日orbo")
+    ActiveWorkbook.Worksheets("Orbo").Select
+    ActiveWorkbook.Worksheets("Orbo").Range(Cells(2, 1), Cells(30, 1)).Value = ActiveWorkbook.Worksheets("Sheet3").Cells(60, 2).Value
+    ActiveWorkbook.Worksheets("異常lot").Select
+    ActiveWorkbook.Worksheets("異常lot").Range(Cells(2, 1), Cells(50, 1)).Value = ActiveWorkbook.Worksheets("Sheet3").Cells(60, 2).Value
+    ActiveWorkbook.Worksheets("每日orbo").Select
+    ActiveWorkbook.Worksheets("每日orbo").Cells(10, 1).Select
+    Selection.End(xlDown).Select
+    Selection.Offset(1, 0).Select
+    Selection.Value = ActiveWorkbook.Worksheets("Sheet3").Cells(60, 2).Value
+
+
+End Sub
+
+
+
+
+    '每日VI取消
+    'ActiveWorkbook.Worksheets("每日VI").Select
+    'ActiveWorkbook.Worksheets("每日VI").Cells(10, 1).Select
+    'Selection.End(xlDown).Select
+    'Selection.Offset(1, 0).Select
+    'Selection.Value = ActiveWorkbook.Worksheets("Sheet3").Cells(60, 2).Value

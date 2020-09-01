@@ -1,0 +1,294 @@
+Sub 刷新()
+' HoldLot整理 Macro
+'
+'
+    '取得資料與清除"HoldLot清單"
+    On Error GoTo Handler
+    ActiveWorkbook.Worksheets("HoldLot清單").Select
+    ActiveWorkbook.Worksheets("HoldLot清單").AutoFilterMode = False
+    ActiveWorkbook.Worksheets("HoldLot清單").Cells.Clear
+    Call getData
+    Dim count As Integer '列數
+    Dim i As Integer
+    count = 2
+
+    
+    '刪除多餘列
+    Do Until ActiveWorkbook.Worksheets("HoldLot清單").Cells(count, 7) = ""
+        count = count + 1
+    Loop
+    count = count + 1
+    For i = 1 To count
+        If ActiveWorkbook.Worksheets("HoldLot清單").Cells(i, 8) = "" And ActiveWorkbook.Worksheets("HoldLot清單").Cells(i, 1) = "" Then
+            Rows(i).Delete
+        End If
+        If ActiveWorkbook.Worksheets("HoldLot清單").Cells(i + 1, 8) = "" And ActiveWorkbook.Worksheets("HoldLot清單").Cells(i + 1, 1) = "" Then
+            Rows(i + 1).Delete
+        End If
+    Next
+
+
+    '填補空洞
+    count = 2
+    Do Until ActiveWorkbook.Worksheets("HoldLot清單").Cells(count, 7) = ""
+        count = count + 1
+    Loop
+    count = count - 1
+    For i = 1 To count
+        If ActiveWorkbook.Worksheets("HoldLot清單").Cells(i, 1) = "" And ActiveWorkbook.Worksheets("HoldLot清單").Cells(i, 2) = "" Then
+            ActiveWorkbook.Worksheets("HoldLot清單").Cells(i, 1) = ActiveWorkbook.Worksheets("HoldLot清單").Cells(i - 1, 1)
+            ActiveWorkbook.Worksheets("HoldLot清單").Cells(i, 2) = ActiveWorkbook.Worksheets("HoldLot清單").Cells(i - 1, 2)
+        End If
+    Next
+
+
+    '照部門.Q time排序
+    Cells.Select
+    Application.CutCopyMode = False
+    ActiveWorkbook.Worksheets("HoldLot清單").Sort.SortFields.Clear
+    ActiveWorkbook.Worksheets("HoldLot清單").Sort.SortFields.Add Key:=Range("I2:I200") _
+        , SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+    ActiveWorkbook.Worksheets("HoldLot清單").Sort.SortFields.Add Key:=Range("J2:J200") _
+        , SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+    With ActiveWorkbook.Worksheets("HoldLot清單").Sort
+        .SetRange Range("A1:L200")
+        .Header = xlYes
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+
+
+    '排列到正確位置
+    Columns("F:F").Select
+    Selection.ColumnWidth = 82.63
+    Columns("D:D").Select
+    Selection.ColumnWidth = 13.5
+    ActiveWorkbook.Worksheets("HoldLot清單").Range(Cells(1, 8), Cells(count, 8)).Value = ActiveWorkbook.Worksheets("HoldLot清單").Range(Cells(1, 9), Cells(count, 9)).Value
+    ActiveWorkbook.Worksheets("HoldLot清單").Range(Cells(1, 9), Cells(count, 9)).Value = ActiveWorkbook.Worksheets("HoldLot清單").Range(Cells(1, 10), Cells(count, 10)).Value
+    ActiveWorkbook.Worksheets("HoldLot清單").Range(Cells(1, 10), Cells(count, 10)).Value = ActiveWorkbook.Worksheets("HoldLot清單").Range(Cells(1, 11), Cells(count, 11)).Value
+    ActiveWorkbook.Worksheets("HoldLot清單").Range(Cells(1, 11), Cells(count, 11)).Value = ActiveWorkbook.Worksheets("HoldLot清單").Range(Cells(1, 6), Cells(count, 6)).Value
+    ActiveWorkbook.Worksheets("HoldLot清單").Range(Cells(1, 6), Cells(count, 6)).Value = ActiveWorkbook.Worksheets("HoldLot清單").Range(Cells(1, 12), Cells(count, 12)).Value
+    ActiveWorkbook.Worksheets("HoldLot清單").Range(Cells(1, 12), Cells(count, 12)).Value = ActiveWorkbook.Worksheets("HoldLot清單").Range(Cells(1, 4), Cells(count, 4)).Value
+    ActiveWorkbook.Worksheets("HoldLot清單").Range(Cells(1, 4), Cells(count, 4)).Value = ActiveWorkbook.Worksheets("HoldLot清單").Range(Cells(1, 5), Cells(count, 5)).Value
+    ActiveWorkbook.Worksheets("HoldLot清單").Range(Cells(1, 3), Cells(count, 3)).Value = ""
+    ActiveWorkbook.Worksheets("HoldLot清單").Range(Cells(1, 5), Cells(count, 5)).Value = ""
+    
+    
+    '貼 EQP ID 從 HOLD 貨人
+    Dim j As Integer
+    Dim head As String
+    Dim machine As String
+    j = 2
+    ActiveWorkbook.Worksheets("HoldLot清單").Cells(1, 3).Value = ActiveWorkbook.Worksheets("HoldLot清單").Cells(1, 7).Value
+    Do While ActiveWorkbook.Worksheets("HoldLot清單").Cells(j, 7).Value <> ""
+        head = Left(ActiveWorkbook.Worksheets("HoldLot清單").Cells(j, 7).Value, 5)
+        machine = Mid(ActiveWorkbook.Worksheets("HoldLot清單").Cells(j, 7).Value, 3, 4) & "00"
+        If head = "AKIEX" Then
+            ActiveWorkbook.Worksheets("HoldLot清單").Cells(j, 3) = machine
+        ElseIf head = "AKMOR" Then
+            ActiveWorkbook.Worksheets("HoldLot清單").Cells(j, 3) = machine
+        Else: ActiveWorkbook.Worksheets("HoldLot清單").Cells(j, 3) = ""
+        End If
+        j = j + 1
+    Loop
+
+
+    '貼EQP ID-從HOLD NOTE
+    Dim a As Integer
+    Dim machine_note_pos As Integer
+    For a = 2 To j
+        If ActiveWorkbook.Worksheets("HoldLot清單").Cells(a, 3) = "" And ActiveWorkbook.Worksheets("HoldLot清單").Cells(a, 6) <> "" Then
+        machine_note_pos = InStr(1, ActiveWorkbook.Worksheets("HoldLot清單").Cells(a, 6), "IEX", vbTextCompare)
+            If machine_note_pos <> 0 Then
+            ActiveWorkbook.Worksheets("HoldLot清單").Cells(a, 3) = Mid(ActiveWorkbook.Worksheets("HoldLot清單").Cells(a, 6), machine_note_pos, 6)
+            Else
+            ActiveWorkbook.Worksheets("HoldLot清單").Cells(a, 3) = ""
+            End If
+        End If
+    Next a
+
+
+    'note.slot自動換列
+    ActiveWorkbook.Worksheets("HoldLot清單").Columns("E:F").Select
+    With Selection
+        .HorizontalAlignment = xlGeneral
+        .VerticalAlignment = xlCenter
+        .WrapText = True
+        .Orientation = 0
+        .AddIndent = False
+        .IndentLevel = 0
+        .ShrinkToFit = False
+        .ReadingOrder = xlContext
+        .MergeCells = False
+    End With
+
+
+    'note.slot欄格式轉文字
+    ActiveWorkbook.Worksheets("HoldLot清單").Columns("E:F").Select
+    Selection.NumberFormatLocal = "@"
+
+
+    '標註P0和P2
+    Dim b As Integer
+    b = 2
+    Do Until ActiveWorkbook.Worksheets("HoldLot清單").Cells(b, 8) = ""
+        If InStr(ActiveWorkbook.Worksheets("HoldLot清單").Cells(b, 8), "P0") <> 0 Or InStr(ActiveWorkbook.Worksheets("HoldLot清單").Cells(b, 8), "P2") <> 0 Then
+            ActiveWorkbook.Worksheets("HoldLot清單").Cells(b, 8).Select
+            With Selection.Interior
+                .Pattern = xlSolid
+                .PatternColorIndex = xlAutomatic
+                .Color = 65535
+                .TintAndShade = 0
+                .PatternTintAndShade = 0
+            End With
+        Else: ActiveWorkbook.Worksheets("HoldLot清單").Cells(b, 8).Select
+            With Selection.Interior
+                .Pattern = xlNone
+                .TintAndShade = 0
+                .PatternTintAndShade = 0
+            End With
+        End If
+        b = b + 1
+    Loop
+
+
+    'Q time <= 5 標紅字
+    Dim c As Integer
+    c = 2
+    Do Until ActiveWorkbook.Worksheets("HoldLot清單").Cells(c, 9) = ""
+        If ActiveWorkbook.Worksheets("HoldLot清單").Cells(c, 9).Value <= 5 Then
+        ActiveWorkbook.Worksheets("HoldLot清單").Cells(c, 9).Select
+            With Selection.Font
+            .Color = -16776961
+            .TintAndShade = 0
+            End With
+        Else: ActiveWorkbook.Worksheets("HoldLot清單").Cells(c, 9).Select
+            With Selection.Font
+            .ColorIndex = xlAutomatic
+            .TintAndShade = 0
+            End With
+        End If
+        c = c + 1
+    Loop
+
+
+    '標註P1 ADO
+    Dim P1_ADO_exist_1 As Integer
+    Dim P1_ADO_exist_2 As Integer
+    Dim d As Integer
+    For d = 2 To j
+        P1_ADO_exist_1 = InStr(1, ActiveWorkbook.Worksheets("HoldLot清單").Cells(d, 8), "P1", vbTextCompare)
+        P1_ADO_exist_2 = InStr(1, ActiveWorkbook.Worksheets("HoldLot清單").Cells(d, 6), "ADO", vbTextCompare)
+            If P1_ADO_exist_1 <> 0 And P1_ADO_exist_2 <> 0 Then
+                ActiveWorkbook.Worksheets("HoldLot清單").Cells(d, 6).Select
+                    With Selection.Font
+                    .Color = -16776961
+                    .TintAndShade = 0
+                    End With
+                Else: ActiveWorkbook.Worksheets("HoldLot清單").Cells(d, 6).Select
+                    With Selection.Font
+                    .ColorIndex = xlAutomatic
+                    .TintAndShade = 0
+                    End With
+            End If
+    Next d
+
+
+    '加底色
+    ActiveWorkbook.Worksheets("HoldLot清單").Range(Cells(1, 1), Cells(count, 6)).Select
+    With Selection.Interior
+        .Pattern = xlSolid
+        .PatternColorIndex = xlAutomatic
+        .Color = 16764108
+        .TintAndShade = 0
+        .PatternTintAndShade = 0
+    End With
+
+
+    '加所有框線
+    Selection.Borders(xlDiagonalDown).LineStyle = xlNone
+    Selection.Borders(xlDiagonalUp).LineStyle = xlNone
+    With Selection.Borders(xlEdgeLeft)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlEdgeTop)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlEdgeBottom)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlEdgeRight)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlInsideVertical)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+    With Selection.Borders(xlInsideHorizontal)
+        .LineStyle = xlContinuous
+        .ColorIndex = 0
+        .TintAndShade = 0
+        .Weight = xlThin
+    End With
+
+
+    ActiveWorkbook.Worksheets("HoldLot清單").Range("M1").Value = "刷新時間"
+    ActiveWorkbook.Worksheets("HoldLot清單").Range("M2").Value = Now()
+    ActiveWorkbook.Worksheets("HoldLot清單").Columns("G:M").EntireColumn.AutoFit
+    ActiveWorkbook.Worksheets("HoldLot清單").Range("A1").Select
+    
+    
+    Exit Sub
+
+
+    Handler:
+        Application.DisplayAlerts = False
+        ActiveWorkbook.Save
+End Sub
+
+
+
+'---------------------------------------------------------------------------------------
+Function getData()
+    With ActiveSheet.QueryTables.Add(Connection:= _
+        "URL;http://tw100018633/L8B/Report/HOLD/Hold_Lot_List.aspx?Type=PHOTO", _
+        Destination:=Range("$A$1"))
+        .Name = "Hold_Lot_List.aspx?Type=PHOTO"
+        .FieldNames = True
+        .RowNumbers = False
+        .FillAdjacentFormulas = False
+        .PreserveFormatting = True
+        .RefreshOnFileOpen = False
+        .BackgroundQuery = True
+        .RefreshStyle = xlInsertDeleteCells
+        .SavePassword = False
+        .SaveData = True
+        .AdjustColumnWidth = True
+        .RefreshPeriod = 0
+        .WebSelectionType = xlSpecifiedTables
+        .WebFormatting = xlWebFormattingNone
+        .WebTables = """GridView1"""
+        .WebPreFormattedTextToColumns = True
+        .WebConsecutiveDelimitersAsOne = True
+        .WebSingleBlockTextImport = False
+        .WebDisableDateRecognition = False
+        .WebDisableRedirections = False
+        .Refresh BackgroundQuery:=False
+    End With
+End Function

@@ -1,0 +1,74 @@
+Sub 下班囉()
+
+    '清空轉貼Worksheets
+    ActiveWorkbook.Worksheets("轉貼").Select
+    ActiveWorkbook.Worksheets("轉貼").Cells.Select
+    Selection.ClearContents
+
+
+    '轉貼Worksheets("Orbo")
+    Dim i As Integer
+    Dim RW_slot_O As String
+    Dim RW_pos_O As Integer
+    i = 2
+    Do While ActiveWorkbook.Worksheets("Orbo").Cells(i, 2) <> ""
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 1).Value = ActiveWorkbook.Worksheets("Orbo").Cells(i, 1).Value
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 2).Value = "姿廷"
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 3).Value = ActiveWorkbook.Worksheets("Orbo").Cells(i, 4).Value
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 4).Value = ActiveWorkbook.Worksheets("Orbo").Cells(i, 3).Value
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 5).Value = ActiveWorkbook.Worksheets("Orbo").Cells(i, 2).Value
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 6).Value = ""
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 7).Value = ActiveWorkbook.Worksheets("Orbo").Cells(i, 7).Value
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 8).Value = ActiveWorkbook.Worksheets("Orbo").Cells(i, 6).Value
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 9).Value = ActiveWorkbook.Worksheets("Orbo").Cells(i, 8).Value
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 10).Value = "無檢出異常defect"
+        RW_pos_O = InStr(ActiveWorkbook.Worksheets("Orbo").Cells(i, 8), "RW")
+        If RW_pos_O <> 0 Then
+            RW_slot_O = Left(ActiveWorkbook.Worksheets("Orbo").Cells(i, 8), RW_pos_O + 1)
+        Else: RW_slot_O = "NA"
+        End If
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 11).Value = RW_slot_O
+        i = i + 1
+    Loop
+
+
+    '轉貼Worksheets("異常lot")
+    Dim j As Integer
+    Dim RW_pos_H As Integer
+    j = 2
+    Do While ActiveWorkbook.Worksheets("異常lot").Cells(j, 2) <> ""
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 1).Value = ActiveWorkbook.Worksheets("異常lot").Cells(j, 1).Value
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 2).Value = "姿廷"
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 3).Value = ActiveWorkbook.Worksheets("異常lot").Cells(j, 4).Value
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 4).Value = ActiveWorkbook.Worksheets("異常lot").Cells(j, 3).Value
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 5).Value = ActiveWorkbook.Worksheets("異常lot").Cells(j, 2).Value
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 6).Value = ""
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 7).Value = ActiveWorkbook.Worksheets("異常lot").Cells(j, 7).Value
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 8).Value = "NA"
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 9).Value = "NA"
+        ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 10).Value = ActiveWorkbook.Worksheets("異常lot").Cells(j, 8).Value
+        RW_pos_H = InStr(ActiveWorkbook.Worksheets("異常lot").Cells(j, 8), "RW")
+        If RW_pos_H <> 0 Then
+            ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 11).Value = ActiveWorkbook.Worksheets("異常lot").Cells(j, 8).Value
+        Else: ActiveWorkbook.Worksheets("轉貼").Cells(i - 1, 11) = "NA"
+        End If
+        i = i + 1
+        j = j + 1
+    Loop
+
+
+    '所有資料靠左.複製
+    Range(Cells(1, 1), Cells((i - 2), 11)).Select
+    With Selection
+        .HorizontalAlignment = xlLeft
+        .Orientation = 0
+        .AddIndent = False
+        .IndentLevel = 0
+        .ShrinkToFit = False
+        .ReadingOrder = xlContext
+        .MergeCells = False
+    End With
+    Selection.Copy
+
+
+End Sub
